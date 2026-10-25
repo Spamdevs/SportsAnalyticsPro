@@ -21,4 +21,4 @@ An end-to-end computer vision web application for football player detection, tra
 The system successfully tracks players in broadcast footage, calculates real-world distances and speeds, and classifies activities (e.g., SPRINTING, JOGGING).
 
 ## Author
-[Your Name] - University of Port Harcourt
+Ugwumadu Divine - University of Port Harcourt
