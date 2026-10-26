@@ -1,11 +1,12 @@
-
 from flask import Flask, render_template_string, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import random, os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sports.db'
+# Absolute path for the live VPS deployment
+db_path = '/home/vuprojects-sportsanalyticspro/htdocs/sportsanalyticspro.vuprojects.com/sports.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -76,4 +77,4 @@ def results(match_id):
     return render_template_string(html, stats=stats)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5055)
