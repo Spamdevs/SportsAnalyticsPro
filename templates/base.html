@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportsAnalytics Pro - Dual-Paradigm Video Intelligence Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0d1117; color: #e6edf3; font-family: system-ui, -apple-system, sans-serif; }
+        .glass { background: rgba(22, 27, 34, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(48, 54, 61, 0.8); }
+        .pitch-grid {
+            background-color: #1e3a1e;
+            background-image: 
+                radial-gradient(circle at 50% 50%, transparent 60px, rgba(255,255,255,0.4) 60px, rgba(255,255,255,0.4) 62px, transparent 62px),
+                linear-gradient(to right, rgba(255,255,255,0.4) 2px, transparent 2px),
+                linear-gradient(to bottom, rgba(255,255,255,0.4) 2px, transparent 2px);
+            background-size: 100% 100%, 50% 100%, 100% 100%;
+            border: 3px solid rgba(255,255,255,0.7);
+            position: relative;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 py-3.5 flex flex-wrap items-center justify-between border-b border-gray-800 gap-4">
+        <div class="flex items-center space-x-3">
+            <div class="h-9 w-9 rounded-lg bg-emerald-500 flex items-center justify-center font-black text-black text-xl">⚽</div>
+            <div>
+                <a href="/" class="text-xl font-bold tracking-tight text-white hover:text-emerald-400 transition">SportsAnalytics Pro</a>
+                <span class="text-[11px] text-gray-400 block">Dual-Paradigm Traditional & Deep Learning Tracking</span>
+            </div>
+        </div>
+
+        {% if session.get('username') %}
+        <!-- Navigation Tabs: Active Only When Signed In -->
+        <div class="flex items-center space-x-1 text-xs">
+            <a href="/dashboard" 
+               class="px-3 py-1.5 rounded-lg transition {% if request.path == '/dashboard' or request.path.startswith('/match') %}text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 font-semibold{% else %}text-gray-300 hover:text-white hover:bg-gray-800{% endif %}">
+                Dashboard
+            </a>
+            <a href="/compare/1" 
+               class="px-3 py-1.5 rounded-lg transition {% if request.path.startswith('/compare') %}text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 font-semibold{% else %}text-gray-300 hover:text-white hover:bg-gray-800{% endif %}">
+                Dual Comparison
+            </a>
+            <a href="/benchmarks" 
+               class="px-3 py-1.5 rounded-lg transition {% if request.path == '/benchmarks' %}text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 font-semibold{% else %}text-gray-300 hover:text-white hover:bg-gray-800{% endif %}">
+                Benchmark Results
+            </a>
+            <a href="/surveillance/1" 
+               class="px-3 py-1.5 rounded-lg transition {% if request.path.startswith('/surveillance') %}text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 font-semibold{% else %}text-gray-300 hover:text-white hover:bg-gray-800{% endif %}">
+                Surveillance Mode
+            </a>
+            <a href="/annotate/1" 
+               class="px-3 py-1.5 rounded-lg transition {% if request.path.startswith('/annotate') %}text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 font-semibold{% else %}text-gray-300 hover:text-white hover:bg-gray-800{% endif %}">
+                Annotation Tool
+            </a>
+        </div>
+
+        <!-- Project Owner & Auth State -->
+        <div class="flex items-center space-x-3 text-xs">
+            <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
+                Project by Ugwumadu Divine
+            </span>
+            <div class="flex items-center space-x-2">
+                <span class="text-white font-semibold">👤 {{ session.get('username') }}</span>
+                <a href="/logout" class="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20 transition">Sign Out</a>
+            </div>
+        </div>
+        {% else %}
+        <!-- When on Landing Page & Logged Out -->
+        <div class="flex items-center space-x-3 text-xs">
+            <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
+                Project by Ugwumadu Divine
+            </span>
+            <a href="/login" class="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold transition shadow-lg shadow-emerald-500/20">
+                Sign In &rarr;
+            </a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass mt-auto py-6 border-t border-gray-800 text-center text-xs text-gray-400 space-y-1">
+        <p class="font-bold text-emerald-400 text-sm">Project by Ugwumadu Divine</p>
+        <p>Department of Computer Science — University of Port Harcourt</p>
+        <p class="text-gray-500 text-[11px]">Group A: Dual-Paradigm Video Analysis Application (HOG/SVM, SIFT, YOLOv8, DeepSORT & MySQL).</p>
+    </footer>
+</body>
+</html>

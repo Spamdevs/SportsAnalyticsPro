@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="space-y-6" id="match-container" data-match-id="{{ match.match_id }}" data-status="{{ match.processing_status }}">
+    <!-- Match Header Banner -->
+    <div class="glass p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-black text-white">{{ match.team_a_name }} <span class="text-emerald-400 font-normal">vs</span> {{ match.team_b_name }}</h1>
+                <span id="status-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
+                    {% if match.processing_status == 'completed' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
+                    {% elif match.processing_status == 'processing' %}bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse
+                    {% else %}bg-red-500/20 text-red-400 border border-red-500/30{% endif %}">
+                    {{ match.processing_status }}
+                </span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Venue: <span class="text-white">{{ match.venue }}</span> &bull; Date: <span class="text-white">{{ match.date }}</span> &bull; Match ID: <span class="text-emerald-400 font-mono">#{{ match.match_id }}</span></p>
+        </div>
+        <div class="flex items-center gap-3">
+            <form action="/match/{{ match.match_id }}/delete" method="POST" onsubmit="return confirm('Delete this match and all associated tracking data permanently?');" class="inline">
+                <button type="submit" class="px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500 text-xs font-semibold text-red-400 hover:text-white border border-red-500/20 transition">
+                    Delete Match
+                </button>
+            </form>
+            <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-300 transition">
+                Export PDF Report
+            </button>
+            <a href="/dashboard" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-black transition">
+                &larr; Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- 1. PROCESSING STATE (SPINNER + PIPELINE STEPS + AUTO-REFRESH) -->
+    {% if match.processing_status == 'processing' or match.processing_status == 'pending' %}
+    <div class="glass p-12 md:p-16 rounded-3xl text-center max-w-3xl mx-auto space-y-6 border border-emerald-500/20 shadow-2xl">
+        <div class="relative w-20 h-20 mx-auto">
+            <div class="w-20 h-20 rounded-full border-4 border-gray-800 border-t-emerald-500 animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-2xl">⚽</div>
+        </div>
+
+        <div class="space-y-2">
+            <h2 class="text-2xl font-black text-white">Running Computer Vision Pipeline...</h2>
+            <p class="text-xs md:text-sm text-gray-400 max-w-lg mx-auto leading-relaxed">
+                Extracting video keyframes, localizing players with YOLOv8, projecting pitch homography coordinates, clustering jersey kits in HSV space, and rendering tracking bounding boxes.
+            </p>
+        </div>
+
+        <!-- Animated Progress Steps -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-left pt-4 border-t border-gray-800/80 font-mono text-[11px]">
+            <div class="p-3 bg-gray-900/60 rounded-xl border border-gray-800">
+                <span class="text-emerald-400 font-bold block">1. Detection</span>
+                <span class="text-gray-400 text-[10px]">YOLOv8 Nano</span>
+            </div>
+            <div class="p-3 bg-gray-900/60 rounded-xl border border-gray-800">
+                <span class="text-emerald-400 font-bold block">2. Tracking</span>
+                <span class="text-gray-400 text-[10px]">DeepSORT Kalman</span>
+            </div>
+            <div class="p-3 bg-gray-900/60 rounded-xl border border-gray-800">
+                <span class="text-emerald-400 font-bold block">3. Clustering</span>
+                <span class="text-gray-400 text-[10px]">K-Means HSV</span>
+            </div>
+            <div class="p-3 bg-gray-900/60 rounded-xl border border-gray-800">
+                <span class="text-emerald-400 font-bold block">4. Encoding</span>
+                <span class="text-gray-400 text-[10px]">Overlay MP4</span>
+            </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-mono">
+            🔄 Auto-refreshing in real-time... The page will update automatically once processing finishes.
+        </div>
+    </div>
+
+    <!-- 2. FAILED STATE -->
+    {% elif match.processing_status == 'failed' %}
+    <div class="glass p-12 rounded-3xl text-center max-w-2xl mx-auto space-y-4 border border-red-500/20">
+        <div class="text-4xl">⚠️</div>
+        <h2 class="text-xl font-bold text-white">Video Processing Error</h2>
+        <p class="text-xs text-gray-400">
+            The video could not be decoded or was interrupted. Please delete this match and upload an MP4 clip under 50 MB.
+        </p>
+        <a href="/dashboard" class="inline-block px-5 py-2 rounded-xl bg-emerald-500 text-black font-bold text-xs">
+            Return to Dashboard
+        </a>
+    </div>
+
+    <!-- 3. COMPLETED STATE (FULL ANALYTICS) -->
+    {% elif match.processing_status == 'completed' %}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Annotated Video Player -->
+        <div class="glass p-6 rounded-2xl space-y-3">
+            <div class="flex justify-between items-center mb-1">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <span>📹</span> Match Video (AI Tracking Overlay)
+                </h3>
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold">
+                    YOLOv8 + DeepSORT
+                </span>
+            </div>
+            <p class="text-xs text-gray-400">Live bounding boxes color-coded by kit classification with persistent track IDs.</p>
+
+            <div class="aspect-video bg-black rounded-xl overflow-hidden border border-gray-800 flex items-center justify-center">
+                <video controls autoplay muted loop playsinline class="w-full h-full object-contain">
+                    <source src="/uploads/annotated_{{ match.video_filename }}" type="video/mp4">
+                    <source src="/uploads/{{ match.video_filename }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <div class="flex justify-between items-center text-[11px] text-gray-400 font-mono pt-1">
+                <span class="text-blue-400">&bull; {{ match.team_a_name }} (Blue)</span>
+                <span class="text-red-400">&bull; {{ match.team_b_name }} (Red)</span>
+                <span class="text-emerald-400">&bull; 15 FPS Inference</span>
+            </div>
+        </div>
+
+        <!-- 2D Metric Pitch Radar -->
+        <div class="glass p-6 rounded-2xl space-y-3">
+            <div class="flex items-center justify-between mb-1">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <span>🗺️</span> 2D Pitch Radar (105m &times; 68m)
+                </h3>
+                <div class="flex gap-2">
+                    <button id="btn-toggle-trails" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-semibold hover:bg-emerald-500 hover:text-black transition">
+                        Trajectories
+                    </button>
+                    <button id="btn-toggle-heat" class="px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-semibold hover:bg-blue-500 hover:text-black transition">
+                        Heatmap
+                    </button>
+                </div>
+            </div>
+            <p class="text-xs text-gray-400">Homography-projected foot coordinates mapped onto metric coordinates.</p>
+            
+            <div class="w-full flex justify-center">
+                <canvas id="pitchCanvas" width="840" height="544" class="pitch-grid rounded-xl w-full max-w-[840px] shadow-2xl"></canvas>
+            </div>
+            <div class="flex justify-between items-center text-[11px] text-gray-400 px-1 font-mono">
+                <span>&larr; {{ match.team_a_name }} Goal</span>
+                <span>Calibrated Metric Field</span>
+                <span>{{ match.team_b_name }} Goal &rarr;</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Possession & Classification Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="glass p-6 rounded-2xl flex flex-col justify-between">
+            <h3 class="text-base font-bold text-white mb-2">Possession Breakdown</h3>
+            <div class="h-44 flex items-center justify-center">
+                <canvas id="possessionChart"></canvas>
+            </div>
+        </div>
+
+        <div class="glass p-6 rounded-2xl flex flex-col justify-between">
+            <h3 class="text-base font-bold text-white mb-2">Team Classification (K-Means HSV)</h3>
+            <div class="space-y-3 text-xs">
+                {% for t in teams %}
+                <div class="p-3 bg-gray-900/60 rounded-xl border border-gray-800 flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-white">{{ t.team_name }}</span>
+                        <span class="text-gray-400 block text-[10px]">Cluster #{{ t.cluster_label }}</span>
+                    </div>
+                    <span class="px-2.5 py-1 rounded bg-gray-800 font-mono text-[11px] text-emerald-400">K=2 Centroid Set</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-[11px] text-gray-500 mt-2">Upper-40% jersey bounding crop in HSV pigment space.</div>
+        </div>
+
+        <div class="glass p-6 rounded-2xl flex flex-col justify-between">
+            <h3 class="text-base font-bold text-white mb-2">Activity Recognition Engine</h3>
+            <p class="text-xs text-gray-400 leading-relaxed">
+                MediaPipe 33-keypoint skeletal landmark tracking combined with kinematic velocity thresholding (Standing &lt;3 km/h, Jogging 8-22 km/h, Sprinting &gt;24 km/h, and vertical elevation jumps).
+            </p>
+            <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-400 font-mono mt-3">
+                Kinematic Speed & Pose Analysis Active
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Physical Metrics Table -->
+    <div class="glass p-6 rounded-2xl">
+        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <span>🏃‍♂️</span> Player Tracking & Physical Performance Metrics
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-gray-300">
+                <thead class="text-gray-400 uppercase bg-gray-900/50 border-b border-gray-800">
+                    <tr>
+                        <th class="py-3 px-4">Track ID</th>
+                        <th class="py-3 px-4">Assigned Team</th>
+                        <th class="py-3 px-4">Total Distance (m)</th>
+                        <th class="py-3 px-4">Max Speed (km/h)</th>
+                        <th class="py-3 px-4">Avg Speed (km/h)</th>
+                        <th class="py-3 px-4">Sprint Count (>24 km/h)</th>
+                        <th class="py-3 px-4">Dominant Activity</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800">
+                    {% for s in stats %}
+                    <tr class="hover:bg-gray-800/40 transition font-mono">
+                        <td class="py-3 px-4 font-bold text-emerald-400">#{{ s.track_id }}</td>
+                        <td class="py-3 px-4 font-sans">
+                            {% if s.team_id == 0 %}
+                            <span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-semibold">{{ match.team_a_name }}</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-semibold">{{ match.team_b_name }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4">{{ s.total_distance }} m</td>
+                        <td class="py-3 px-4 font-semibold {% if s.max_speed > 24 %}text-yellow-400{% endif %}">{{ s.max_speed }} km/h</td>
+                        <td class="py-3 px-4">{{ s.avg_speed }} km/h</td>
+                        <td class="py-3 px-4">{{ s.sprint_count }}</td>
+                        <td class="py-3 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold uppercase
+                                {% if s.dominant_activity == 'sprinting' %}bg-red-500/20 text-red-400
+                                {% elif s.dominant_activity == 'jogging' %}bg-emerald-500/20 text-emerald-400
+                                {% elif s.dominant_activity == 'jumping' %}bg-purple-500/20 text-purple-400
+                                {% else %}bg-gray-700 text-gray-300{% endif %}">
+                                {{ s.dominant_activity }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="py-4 text-center text-gray-500">No tracking records available for this match.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    const matchContainer = document.getElementById('match-container');
+    const matchId = matchContainer.dataset.matchId;
+    const initialStatus = matchContainer.dataset.status;
+
+    // Real-time polling when processing: automatically reloads page on completion
+    if (initialStatus === 'processing' || initialStatus === 'pending') {
+        const poller = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/match/${matchId}/status`);
+                const data = await res.json();
+                if (data.processing_status === 'completed' || data.processing_status === 'failed') {
+                    clearInterval(poller);
+                    window.location.reload();
+                }
+            } catch (err) {
+                console.log("Polling...", err);
+            }
+        }, 2500);
+    }
+
+    // Load Charts & Radar when completed
+    if (initialStatus === 'completed') {
+        let analyticsData = null;
+        let showTrails = true;
+        let showHeatmap = false;
+
+        fetch(`/api/match/${matchId}/analytics`)
+            .then(res => res.json())
+            .then(data => {
+                analyticsData = data;
+                renderCharts(data);
+                renderPitch();
+            });
+
+        function renderCharts(data) {
+            const ctx = document.getElementById('possessionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['{{ match.team_a_name }}', '{{ match.team_b_name }}'],
+                    datasets: [{
+                        data: [data.possession.team_a_pct, data.possession.team_b_pct],
+                        backgroundColor: ['#3b82f6', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        function renderPitch() {
+            const canvas = document.getElementById('pitchCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const sx = canvas.width / 105.0;
+            const sy = canvas.height / 68.0;
+
+            if (!analyticsData || !analyticsData.trajectories) return;
+
+            for (const [tid, tdata] of Object.entries(analyticsData.trajectories)) {
+                const color = tdata.team_id === 0 ? 'rgba(59, 130, 246, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+                const pts = tdata.points;
+
+                if (showTrails && pts.length > 1) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = tdata.team_id === 0 ? 'rgba(59, 130, 246, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(pts[0].x * sx, pts[0].y * sy);
+                    for (let i = 1; i < pts.length; i++) {
+                        ctx.lineTo(pts[i].x * sx, pts[i].y * sy);
+                    }
+                    ctx.stroke();
+                }
+
+                if (showHeatmap) {
+                    pts.forEach(p => {
+                        const rad = ctx.createRadialGradient(p.x * sx, p.y * sy, 2, p.x * sx, p.y * sy, 25);
+                        rad.addColorStop(0, 'rgba(234, 179, 8, 0.25)');
+                        rad.addColorStop(1, 'rgba(234, 179, 8, 0)');
+                        ctx.fillStyle = rad;
+                        ctx.beginPath();
+                        ctx.arc(p.x * sx, p.y * sy, 25, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }
+
+                if (pts.length > 0) {
+                    const last = pts[pts.length - 1];
+                    ctx.beginPath();
+                    ctx.fillStyle = color;
+                    ctx.arc(last.x * sx, last.y * sy, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '9px monospace';
+                    ctx.fillText(tid, (last.x * sx) - 3, (last.y * sy) - 9);
+                }
+            }
+        }
+
+        document.getElementById('btn-toggle-trails').addEventListener('click', () => {
+            showTrails = !showTrails;
+            renderPitch();
+        });
+
+        document.getElementById('btn-toggle-heat').addEventListener('click', () => {
+            showHeatmap = !showHeatmap;
+            renderPitch();
+        });
+    }
+</script>
+{% endblock %}

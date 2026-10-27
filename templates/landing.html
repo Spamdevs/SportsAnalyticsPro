@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="space-y-16 py-6">
+    <!-- Hero Section -->
+    <div class="glass p-10 md:p-14 rounded-3xl text-center max-w-5xl mx-auto relative overflow-hidden border border-emerald-500/20 shadow-2xl">
+        <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+        <span class="px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold uppercase tracking-widest inline-block mb-4">
+            Undergraduate Research Project &bull; Group A
+        </span>
+
+        <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight max-w-4xl mx-auto">
+            Dual-Paradigm Video Analysis for Object Recognition & Player Tracking
+        </h1>
+
+        <p class="text-sm md:text-base text-gray-300 mt-5 max-w-2xl mx-auto leading-relaxed">
+            A comprehensive web platform comparing <strong>Traditional Computer Vision</strong> (HOG+SVM, SIFT) against <strong>Modern Deep Learning</strong> (YOLOv8, Faster R-CNN, DeepSORT) across competitive sports and surveillance footage.
+        </p>
+
+        <div class="flex flex-wrap justify-center items-center gap-4 mt-8">
+            {% if session.get('username') %}
+            <a href="/dashboard" class="px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm uppercase tracking-wider transition shadow-lg shadow-emerald-500/20">
+                Go to Analyst Workspace &rarr;
+            </a>
+            {% else %}
+            <a href="/login" class="px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm uppercase tracking-wider transition shadow-lg shadow-emerald-500/20">
+                Sign In to Platform &rarr;
+            </a>
+            <a href="/register" class="px-6 py-3.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-semibold text-sm transition border border-gray-700">
+                Create Account
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12 pt-8 border-t border-gray-800/80 text-left">
+            <div>
+                <span class="text-xs text-gray-400 block">Candidate</span>
+                <span class="text-sm font-bold text-white">Ugwumadu Divine</span>
+            </div>
+            <div>
+                <span class="text-xs text-gray-400 block">Institution</span>
+                <span class="text-sm font-bold text-white">UniPort</span>
+            </div>
+            <div>
+                <span class="text-xs text-gray-400 block">Department</span>
+                <span class="text-sm font-bold text-white">Computer Science</span>
+            </div>
+            <div>
+                <span class="text-xs text-gray-400 block">Relational DB</span>
+                <span class="text-sm font-bold text-emerald-400">MySQL 8.0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Pillars / Feature Matrix -->
+    <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-10">
+            <span class="text-xs font-mono text-emerald-400 uppercase tracking-widest">Platform Modules</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-white mt-1">Dual-Paradigm Analysis Capabilities</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Pillar 1: Dual Paradigm Comparison -->
+            <div class="glass p-7 rounded-2xl border-t-4 border-emerald-500 space-y-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xl font-bold">⚖️</div>
+                <h3 class="text-lg font-bold text-white">Dual-Paradigm Comparison</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Direct empirical evaluation between Traditional CV (HOG + Linear SVM, SIFT) and Single/Two-Stage CNNs (YOLOv8, Faster R-CNN) with synchronized side-by-side video playback.
+                </p>
+                <div class="pt-2 text-[11px] font-mono text-emerald-400">HOG &bull; SIFT &bull; YOLOv8 &bull; Faster R-CNN</div>
+            </div>
+
+            <!-- Pillar 2: Sports Video Intelligence -->
+            <div class="glass p-7 rounded-2xl border-t-4 border-blue-500 space-y-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 text-xl font-bold">⚽</div>
+                <h3 class="text-lg font-bold text-white">Sports Analytics & Tracking</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Monocular broadcast video mapped to a 105m &times; 68m pitch coordinate system via Homography projective transforms, K-Means jersey clustering, and MediaPipe pose kinematics.
+                </p>
+                <div class="pt-2 text-[11px] font-mono text-blue-400">Heatmaps &bull; Speeds &bull; Possession &bull; Trajectories</div>
+            </div>
+
+            <!-- Pillar 3: Surveillance Security -->
+            <div class="glass p-7 rounded-2xl border-t-4 border-amber-500 space-y-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-xl font-bold">🛡️</div>
+                <h3 class="text-lg font-bold text-white">Surveillance Video Analytics</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Security tracking engine featuring user-defined virtual restricted zones, real-time intrusion alarms, and virtual tripwires for cross-line pedestrian entry/exit counting.
+                </p>
+                <div class="pt-2 text-[11px] font-mono text-amber-400">Intrusion &bull; Tripwires &bull; Counting &bull; Alerts</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

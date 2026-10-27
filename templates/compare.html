@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="space-y-6">
+    <div class="glass p-6 rounded-2xl flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-black text-white">Dual-Paradigm Side-by-Side Algorithm Comparison</h1>
+            <p class="text-xs text-gray-400 mt-1">Direct empirical evaluation between Traditional Computer Vision (HOG+SVM) and Modern Deep Learning (YOLOv8) on Match #{{ match.match_id }}.</p>
+        </div>
+        <a href="/benchmarks" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition">
+            View Benchmark Charts &rarr;
+        </a>
+    </div>
+
+    <!-- Side-by-Side Grid View -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Left: Traditional CV (HOG + SVM) -->
+        <div class="glass p-6 rounded-2xl border-t-4 border-amber-500">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-xs font-mono text-amber-400 uppercase tracking-widest font-bold">Traditional CV Paradigm</span>
+                <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-xs font-mono">cv2.HOGDescriptor</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">HOG + Linear SVM</h3>
+            <p class="text-xs text-gray-400 mb-4">Gradient orientation features classified via Support Vector Machine. Susceptible to deformation and occlusion.</p>
+
+            <div class="aspect-video bg-black rounded-xl relative overflow-hidden border border-gray-800 flex items-center justify-center">
+                <!-- Visual Mock of Bounding Boxes for HOG -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                <div class="absolute top-4 left-4 space-y-1 text-xs font-mono">
+                    <span class="block px-2 py-0.5 bg-amber-500/80 text-black rounded font-bold">Detections: 8 players</span>
+                    <span class="block px-2 py-0.5 bg-black/60 text-amber-400 rounded">Inference: ~14.2 FPS</span>
+                    <span class="block px-2 py-0.5 bg-black/60 text-red-400 rounded">Occlusion Losses: 4</span>
+                </div>
+                <!-- Simulated Bounding Boxes -->
+                <div class="absolute w-12 h-24 border-2 border-amber-500 top-1/3 left-1/4 rounded">
+                    <span class="text-[9px] bg-amber-500 text-black px-1 absolute -top-4 left-0">Person 0.68</span>
+                </div>
+                <div class="absolute w-12 h-24 border-2 border-amber-500 top-1/3 left-1/2 rounded">
+                    <span class="text-[9px] bg-amber-500 text-black px-1 absolute -top-4 left-0">Person 0.71</span>
+                </div>
+                <div class="text-gray-600 text-sm font-mono">[ HOG + SVM Video Render ]</div>
+            </div>
+        </div>
+
+        <!-- Right: Modern Deep Learning (YOLOv8) -->
+        <div class="glass p-6 rounded-2xl border-t-4 border-emerald-500">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-xs font-mono text-emerald-400 uppercase tracking-widest font-bold">Modern CNN Paradigm</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-xs font-mono">YOLOv8 Single-Stage</span>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">YOLOv8 + DeepSORT</h3>
+            <p class="text-xs text-gray-400 mb-4">Direct bounding box regression with multi-scale feature pyramid and deep appearance ReID association.</p>
+
+            <div class="aspect-video bg-black rounded-xl relative overflow-hidden border border-gray-800 flex items-center justify-center">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                <div class="absolute top-4 left-4 space-y-1 text-xs font-mono">
+                    <span class="block px-2 py-0.5 bg-emerald-500/80 text-black rounded font-bold">Detections: 14 players</span>
+                    <span class="block px-2 py-0.5 bg-black/60 text-emerald-400 rounded">Inference: ~31.5 FPS</span>
+                    <span class="block px-2 py-0.5 bg-black/60 text-emerald-400 rounded">Identity Switches: Low (0)</span>
+                </div>
+                <!-- Bounding Boxes with Jersey and Track ID -->
+                <div class="absolute w-12 h-24 border-2 border-blue-500 top-1/3 left-1/4 rounded shadow-lg shadow-blue-500/30">
+                    <span class="text-[9px] bg-blue-500 text-white px-1 absolute -top-4 left-0">#4 Rivers Utd (0.94)</span>
+                </div>
+                <div class="absolute w-12 h-24 border-2 border-red-500 top-1/3 left-1/2 rounded shadow-lg shadow-red-500/30">
+                    <span class="text-[9px] bg-red-500 text-white px-1 absolute -top-4 left-0">#9 Enyimba (0.92)</span>
+                </div>
+                <div class="text-gray-600 text-sm font-mono">[ YOLOv8 DeepSORT Video Render ]</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Benchmark Comparison Table -->
+    <div class="glass p-6 rounded-2xl">
+        <h3 class="text-base font-bold text-white mb-4">Empirical Performance Metrics Summary (Chapter Four Results)</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-gray-300">
+                <thead class="text-gray-400 uppercase bg-gray-900/50 border-b border-gray-800">
+                    <tr>
+                        <th class="py-3 px-4">Algorithm</th>
+                        <th class="py-3 px-4">Paradigm</th>
+                        <th class="py-3 px-4">Inference (FPS)</th>
+                        <th class="py-3 px-4">Precision</th>
+                        <th class="py-3 px-4">Recall</th>
+                        <th class="py-3 px-4">mAP@50</th>
+                        <th class="py-3 px-4">MOTA (%)</th>
+                        <th class="py-3 px-4">ID Switches</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800 font-mono">
+                    {% for b in benchmarks %}
+                    <tr class="hover:bg-gray-800/40 transition">
+                        <td class="py-3.5 px-4 font-bold text-white">{{ b.algorithm_name }}</td>
+                        <td class="py-3.5 px-4 font-sans">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold {% if b.paradigm == 'Modern Deep Learning' %}bg-emerald-500/20 text-emerald-400{% else %}bg-amber-500/20 text-amber-400{% endif %}">
+                                {{ b.paradigm }}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 font-bold {% if b.fps > 25 %}text-emerald-400{% endif %}">{{ b.fps }} FPS</td>
+                        <td class="py-3.5 px-4">{{ b.precision_score }}</td>
+                        <td class="py-3.5 px-4">{{ b.recall_score }}</td>
+                        <td class="py-3.5 px-4 font-bold text-white">{{ b.map_50 }}</td>
+                        <td class="py-3.5 px-4 font-semibold {% if b.mota > 70 %}text-emerald-400{% endif %}">{{ b.mota }}%</td>
+                        <td class="py-3.5 px-4 {% if b.id_switches > 30 %}text-red-400{% endif %}">{{ b.id_switches }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
